@@ -1,0 +1,48 @@
+server:
+  port: 10100
+  servlet:
+    context-path: /samplecollect
+spring:
+  servlet:
+    multipart:
+      max-file-size: 2048MB
+      max-request-size: 2048MB
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database: mysql
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.spatial.dialect.mysql.MySQL8SpatialDialect
+
+  datasource:
+    url: jdbc:mysql://192.168.0.75:3306/yangbencaiji?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+    username: root
+    password: ljzh
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  thymeleaf:
+    cache: false
+
+# 项目相关配置
+ljzh:
+  # 名称
+  name: samplecollection
+  # 版本
+  version: 0.0.1
+  # 版权年份
+  copyrightYear: 2023
+  # 实例演示开关
+  demoEnabled: true
+  # 文件路径 示例（ Windows配置D:/ljzh/uploadPath，Linux配置 /home/ljzh/uploadPath）
+  profile: /home/ljzh/uploadPath
+  # 获取ip地址开关
+  addressEnabled: false
+  # 验证码类型 math 数组计算 char 字符验证
+  captchaType: math
+  img_store_path: /mntData/datas/sampleCollection/data
+  img_wmts_path: /mntData/datas/sampleCollection/wmts/
+  export_path: /mntData/datas/sampleCollection/export
+#  img_store_path: D:/sampleCollection/data
+#  img_wmts_path: D:/sampleCollection/wmts/
+#  export_path: D:/sampleCollection/export
