@@ -28,8 +28,7 @@ public class TaskLayerService {
     @Autowired
     private TaskLayerViewRepository taskLayerViewRepository;
 
-    @Autowired
-    private LayerRepository layerRepository;
+
 
 
     public TaskLayer create(TaskLayer taskLayer) {
@@ -38,19 +37,25 @@ public class TaskLayerService {
 
     public Page<Layer> findLayersByTaskIdAndAssignStatusPage(int pageNum, int pageSize, Integer assignStatus, Long taskId) {
         if (!(assignStatus.equals(TaskAssignStatus.ASSIGNED_AUDIT.code()) ||
-            assignStatus.equals(TaskAssignStatus.ASSIGNED_COLLECTION.code()) ||
-            assignStatus.equals(TaskAssignStatus.UNDISTRIBUTED.code()))) {
+                assignStatus.equals(TaskAssignStatus.ASSIGNED_COLLECTION.code()) ||
+                assignStatus.equals(TaskAssignStatus.UNDISTRIBUTED.code()))) {
             throw new CustomException(ResponseEnum.ILLEGAL_STATE);
         }
 
-        Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(Sort.Direction.ASC, "id"));
+        Pageable pageable = PageRequest.of(pageNum - 1, pageSize, Sort.by(Sort.Direction.ASC, "id"));
         List<Long> taskLayerIds = taskLayerViewRepository.findByAssignStatusAndTaskId(assignStatus, taskId).stream().map(TaskLayerView::getTaskLayerId).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(taskLayerIds)) {
             throw new CustomException("The task layer does not exist");
         }
-        
-        List<Layer> layers = taskLayerRepository.findByIdIn(taskLayerIds, pageable).stream().map(TaskLayer::getLayer).distinct().collect(Collectors.toList());
-        return new PageImpl<>(layers, pageable, taskLayerIds.size());
+        System.out.println("pageable.getOffset() = " + pageable.getOffset());
+        List<Layer> layers = taskLayerRepository.findByIdIn(taskLayerIds).stream().map(TaskLayer::getLayer).distinct().collect(Collectors.toList());
+        int start = (int) pageable.getOffset();
+        int end = (start + pageable.getPageSize() - 1) > layers.size() ? layers.size() : (start + pageable.getPageSize());
+        if (start > layers.size()) {
+            throw new CustomException("The page number is too large");
+        }
+        List<Layer> indexObjects = layers.subList(start, end);
+        return new PageImpl<>(indexObjects, pageable, layers.size());
     }
 
 
