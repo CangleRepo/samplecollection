@@ -1,12 +1,13 @@
 package com.ljzh.samplecollection.service;
 
 import com.ljzh.samplecollection.domain.entity.Role;
+import com.ljzh.samplecollection.domain.entity.TaskAssignee;
 import com.ljzh.samplecollection.domain.entity.User;
 import com.ljzh.samplecollection.domain.entity.UserRole;
 import com.ljzh.samplecollection.domain.vo.UserVO;
-import com.ljzh.samplecollection.repository.RoleRepository;
-import com.ljzh.samplecollection.repository.UserRepository;
-import com.ljzh.samplecollection.repository.UserRoleRepository;
+import com.ljzh.samplecollection.domain.vo.UserWithLayersCountVO;
+import com.ljzh.samplecollection.repository.*;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,6 +19,9 @@ import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class UserService {
@@ -29,6 +33,9 @@ public class UserService {
 
     @Autowired
     private UserRoleRepository userRoleRepository;
+
+    @Autowired
+    private TaskAssigneeRepository taskAssigneeRepository;
 
     // 新增用户
     public void addUser(User user) {
@@ -88,6 +95,22 @@ public class UserService {
         userRoleRepository.saveAll(userRoles);
 
         return savedUser;
+    }
+
+    public List<UserWithLayersCountVO> findUserWithLayersCountByRoleId(Long taskId, Long roleId) {
+        List<UserRole> userRoles = userRoleRepository.findUserRoleByRoleId(roleId);
+        List<User> users = userRepository.findByIdIn(userRoles.stream().map(UserRole::getUserId).collect(Collectors.toList()));
+        List<UserWithLayersCountVO> userWithLayersCountVOList = new ArrayList<>();
+        for (User user : users) {
+            UserWithLayersCountVO userWithLayersCountVO = new UserWithLayersCountVO();
+            BeanUtils.copyProperties(new UserVO(user), userWithLayersCountVO);
+            List<TaskAssignee> taskAssignees = taskAssigneeRepository.findByUserIdAndRoleId(user.getId(), roleId);
+            userWithLayersCountVO.setAllLayersNum(taskAssignees.size());
+            List<TaskAssignee> currentTaskAssignees = taskAssignees.stream().filter(taskAssignee -> Objects.equals(taskAssignee.getTask().getId(), taskId)).collect(Collectors.toList());
+            userWithLayersCountVO.setCurrentLayersNum(currentTaskAssignees.size());
+            userWithLayersCountVOList.add(userWithLayersCountVO);
+        }
+        return userWithLayersCountVOList;
     }
 }
 
