@@ -14,7 +14,8 @@ public enum ResponseEnum {
     TASK_NOT_EXITS(10001, "任务不存在"),
     LAYER_NOT_EXITS(10002, "图片不存在"),
     TASK_LAYER_LOCK(10003, "任务图片缺失"),
-    USER_ROLE_NOT_EXIST(10004, "用户角色不存在");
+    ILLEGAL_STATE(10004, "非法的角色"),
+    USER_ROLE_NOT_EXIST(10005, "用户角色不存在");
 
 
     public final int code;

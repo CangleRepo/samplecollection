@@ -1,5 +1,6 @@
 package com.ljzh.samplecollection.controller;
 
+import com.ljzh.samplecollection.domain.entity.Layer;
 import com.ljzh.samplecollection.domain.entity.Sample;
 import com.ljzh.samplecollection.domain.entity.TaskLayer;
 import com.ljzh.samplecollection.domain.dto.SampleStatusUpdateDTO;
@@ -14,6 +15,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.locationtech.jts.io.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,6 +32,16 @@ public class TaskLayerController {
     @Autowired
     private TaskLayerService taskLayerService;
 
+
+    @GetMapping("/page")
+    @ApiOperation("根据任务Id和分配状态分页查询图层名")
+    public BaseResponse<Page<Layer>> findLayersByTaskIdAndAssignStatusPage(@RequestParam(defaultValue = "0") int pageNum, 
+                                                                           @RequestParam(defaultValue = "10") int pageSize,
+                                                                           @RequestParam Integer assignStatus,
+                                                                           @RequestParam Long taskId) {
+        return ResponseUtils.getSuccessResponse(taskLayerService.findLayersByTaskIdAndAssignStatusPage(pageNum, pageSize,assignStatus,taskId));
+    }
+    
     @GetMapping("/{id}")
     @ApiOperation("根据任务图片ID获取任务图片")
     public TaskLayerVO getTaskLayerById(@PathVariable Long id) {
