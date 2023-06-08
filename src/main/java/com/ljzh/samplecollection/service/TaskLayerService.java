@@ -46,7 +46,7 @@ public class TaskLayerService {
         Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(Sort.Direction.ASC, "id"));
         List<Long> taskLayerIds = taskLayerViewRepository.findByAssignStatusAndTaskId(assignStatus, taskId).stream().map(TaskLayerView::getTaskLayerId).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(taskLayerIds)) {
-            throw new RuntimeException("The task layer does not exist");
+            throw new CustomException("The task layer does not exist");
         }
         
         List<Layer> layers = taskLayerRepository.findByIdIn(taskLayerIds, pageable).stream().map(TaskLayer::getLayer).distinct().collect(Collectors.toList());
