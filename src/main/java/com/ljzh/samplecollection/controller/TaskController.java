@@ -49,11 +49,10 @@ public class TaskController {
         return ResponseUtils.getSuccessResponse(taskService.assignTaskLayer(taskId, layerId));
     }
 
-    @PostMapping("/{taskId}/task-assignees")
-    @ApiOperation("分配任务人员")
-    public BaseResponse<?> assignTaskAssignee(@PathVariable("taskId") Long taskId,
-                                                @RequestBody TaskAssignVO taskAssignVO) {
-        taskService.assignTaskAssignee(taskId, taskAssignVO);
+    @PostMapping("/task-assignees")
+    @ApiOperation("分配任务图片给人员")
+    public BaseResponse<?> assignTaskAssignee(@RequestBody TaskAssignVO taskAssignVO) {
+        taskService.assignTaskAssignee(taskAssignVO);
         return ResponseUtils.getSuccessResponse();
     }
 

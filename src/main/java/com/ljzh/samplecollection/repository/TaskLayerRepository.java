@@ -13,4 +13,6 @@ public interface TaskLayerRepository extends JpaRepository<TaskLayer, Long> {
     List<TaskLayer> findByTaskId(Long taskId);
 
     TaskLayer findByLayerIdAndTaskId(Long id, Long taskId);
+
+    List<TaskLayer> findByIdIn(List<Long> taskLayerIds);
 }

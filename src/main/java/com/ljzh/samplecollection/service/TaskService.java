@@ -82,6 +82,9 @@ public class TaskService {
     private RoleRepository roleRepository;
 
     @Autowired
+    private UserRoleRepository userRoleRepository;
+
+    @Autowired
     private LayerGroupRepository layerGroupRepository;
 
     @Autowired
@@ -118,32 +121,36 @@ public class TaskService {
         taskLayerRepository.saveAll(taskLayers);
     }
 
-    public void assignTaskAssignee(Long taskId, TaskAssignVO taskAssignVO) {
-        User user = userRepository.findById(taskAssignVO.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        Role role = roleRepository.findById(taskAssignVO.getRoleId())
-                .orElseThrow(() -> new RuntimeException("Role not found"));
-
-//        if (!user.getRoles().contains(role)) {
-//            throw new RuntimeException("User does not have the role");
-//        }
-
-        TaskAssignee taskAssignee = new TaskAssignee();
-        taskAssignee.setUser(user);
-        taskAssignee.setRole(role);
-        Optional<Task> task = taskRepository.findById(taskId);
-        task.ifPresent(taskAssignee::setTask);
-        taskAssigneeRepository.save(taskAssignee);
-
-        if (taskAssignVO.getTaskLayerId() != null) {
-            TaskLayer taskLayer = taskLayerRepository.findById(taskAssignVO.getTaskLayerId())
-                    .orElseThrow(() -> new RuntimeException("Task layer not found"));
-
-            taskAssignee.setTaskLayer(taskLayer);
-
-            taskAssigneeRepository.save(taskAssignee);
+    public void assignTaskAssignee(TaskAssignVO taskAssignVO) {
+        if (taskAssignVO.getUserIds().size() > taskAssignVO.getTaskLayerIds().size()){
+            throw new CustomException(ResponseEnum.TASK_LAYER_LOCK);
         }
+        List<User> users = userRepository.findByIdIn(taskAssignVO.getUserIds());
+
+        for (User user : users) {
+            UserRole userRole = userRoleRepository.findUserRoleByRoleIdAndUserId(taskAssignVO.getRoleId(), user.getId());
+            if (ObjectUtils.isEmpty(userRole)){
+                throw new CustomException(ResponseEnum.USER_ROLE_NOT_EXIST);
+            }
+        }
+
+        Role role = roleRepository.findById(taskAssignVO.getRoleId()).get();
+        List<TaskLayer> taskLayers = taskLayerRepository.findByIdIn(taskAssignVO.getTaskLayerIds());
+        List<TaskAssignee> taskAssignees = new ArrayList<>();
+        int userIndex = 0;
+        for (TaskLayer taskLayer : taskLayers) {
+            TaskAssignee taskAssignee = new TaskAssignee();
+            taskAssignee.setTaskLayer(taskLayer);
+            taskAssignee.setTask(taskLayer.getTask());
+            taskAssignee.setUser(users.get(userIndex));
+            taskAssignee.setRole(role);
+            userIndex++;
+            if (userIndex == users.size()){
+                userIndex = 0;
+            }
+            taskAssignees.add(taskAssignee);
+        }
+        taskAssigneeRepository.saveAll(taskAssignees);
     }
 
     @EntityGraph(attributePaths = {"taskAssignees", "taskLayers"})

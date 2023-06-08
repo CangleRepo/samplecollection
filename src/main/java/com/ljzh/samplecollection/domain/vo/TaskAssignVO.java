@@ -1,21 +1,22 @@
 package com.ljzh.samplecollection.domain.vo;
 
+import java.util.List;
+
 public class TaskAssignVO {
-    private Long userId;
+    private List<Long> userIds;
 
     private Long roleId;
 
-    private Long taskLayerId;
+    private List<Long> taskLayerIds;
 
     // getter 和 setter
 
-
-    public Long getUserId() {
-        return userId;
+    public List<Long> getUserIds() {
+        return userIds;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setUserIds(List<Long> userIds) {
+        this.userIds = userIds;
     }
 
     public Long getRoleId() {
@@ -26,12 +27,12 @@ public class TaskAssignVO {
         this.roleId = roleId;
     }
 
-    public Long getTaskLayerId() {
-        return taskLayerId;
+    public List<Long> getTaskLayerIds() {
+        return taskLayerIds;
     }
 
-    public void setTaskLayerId(Long taskLayerId) {
-        this.taskLayerId = taskLayerId;
+    public void setTaskLayerIds(List<Long> taskLayerIds) {
+        this.taskLayerIds = taskLayerIds;
     }
 }
 
