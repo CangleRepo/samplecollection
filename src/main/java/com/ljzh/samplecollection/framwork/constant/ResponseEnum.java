@@ -12,7 +12,9 @@ public enum ResponseEnum {
 
     FILE_EXIST(10000, "文件已存在，请修改上传文件名"),
     TASK_NOT_EXITS(10001, "任务不存在"),
-    LAYER_NOT_EXITS(10002, "图片不存在");
+    LAYER_NOT_EXITS(10002, "图片不存在"),
+
+    ILLEGAL_STATE(10003, "非法的角色");
 
 
     public final int code;

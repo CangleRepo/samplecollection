@@ -17,7 +17,7 @@ spring:
         dialect: org.hibernate.spatial.dialect.mysql.MySQL8SpatialDialect
 
   datasource:
-    url: jdbc:mysql://192.168.0.75:3306/yangbencaiji?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+    url: jdbc:mysql://192.168.0.75:3306/yangbencaiji?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8
     username: root
     password: ljzh
     driver-class-name: com.mysql.cj.jdbc.Driver
