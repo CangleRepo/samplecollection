@@ -35,7 +35,7 @@ public class TaskLayerController {
 
     @GetMapping("/page")
     @ApiOperation("根据任务Id和分配状态分页查询图层名")
-    public BaseResponse<Page<Layer>> findLayersByTaskIdAndAssignStatusPage(@RequestParam(defaultValue = "0") int pageNum, 
+    public BaseResponse<Page<Layer>> findLayersByTaskIdAndAssignStatusPage(@RequestParam(defaultValue = "1") int pageNum, 
                                                                            @RequestParam(defaultValue = "10") int pageSize,
                                                                            @RequestParam Integer assignStatus,
                                                                            @RequestParam Long taskId) {
