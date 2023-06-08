@@ -4,6 +4,7 @@ import com.ljzh.samplecollection.domain.entity.User;
 import com.ljzh.samplecollection.domain.entity.UserRole;
 import com.ljzh.samplecollection.domain.dto.LoginRequest;
 import com.ljzh.samplecollection.domain.vo.UserVO;
+import com.ljzh.samplecollection.domain.vo.UserWithLayersCountVO;
 import com.ljzh.samplecollection.framwork.exception.CustomException;
 import com.ljzh.samplecollection.framwork.utils.ResponseUtils;
 import com.ljzh.samplecollection.framwork.vo.BaseResponse;
@@ -97,5 +98,12 @@ public class UserController {
     @ApiOperation("分页查询所有用户")
     public BaseResponse<Page<User>> getAllUsersByPage(@RequestParam(defaultValue = "0") int pageNum, @RequestParam(defaultValue = "10") int pageSize) {
         return ResponseUtils.getSuccessResponse(userService.getAllUsersByPage(pageNum, pageSize));
+    }
+
+    // 按角色查询用户附带当前任务下的任务图片数量和总任务图片数量
+    @GetMapping("/findUsersByCurrentTaskRole")
+    @ApiOperation("按角色查询用户附带当前任务下所选角色的任务图片数量和总任务图片数量")
+    public BaseResponse<List<UserWithLayersCountVO>>  findUserWithLayersCountByRoleId(@RequestParam("taskId") Long taskId, @RequestParam("roleId")Long roleId){
+        return ResponseUtils.getSuccessResponse(userService.findUserWithLayersCountByRoleId(taskId, roleId));
     }
 }
