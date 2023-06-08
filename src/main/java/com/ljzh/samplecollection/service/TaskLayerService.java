@@ -37,9 +37,9 @@ public class TaskLayerService {
     }
 
     public Page<Layer> findLayersByTaskIdAndAssignStatusPage(int pageNum, int pageSize, Integer assignStatus, Long taskId) {
-        if (!assignStatus.equals(TaskAssignStatus.ASSIGNED_AUDIT.code()) ||
-            !assignStatus.equals(TaskAssignStatus.ASSIGNED_COLLECTION.code()) ||
-            !assignStatus.equals(TaskAssignStatus.UNDISTRIBUTED.code())) {
+        if (!(assignStatus.equals(TaskAssignStatus.ASSIGNED_AUDIT.code()) ||
+            assignStatus.equals(TaskAssignStatus.ASSIGNED_COLLECTION.code()) ||
+            assignStatus.equals(TaskAssignStatus.UNDISTRIBUTED.code()))) {
             throw new CustomException(ResponseEnum.ILLEGAL_STATE);
         }
 
