@@ -35,13 +35,13 @@ public class TaskLayerController {
 
     @GetMapping("/page")
     @ApiOperation("根据任务Id和分配状态分页查询图层名")
-    public BaseResponse<Page<Layer>> findLayersByTaskIdAndAssignStatusPage(@RequestParam(defaultValue = "1") int pageNum, 
+    public BaseResponse<Page<Layer>> findLayersByTaskIdAndAssignStatusPage(@RequestParam(defaultValue = "1") int pageNum,
                                                                            @RequestParam(defaultValue = "10") int pageSize,
                                                                            @RequestParam Integer assignStatus,
                                                                            @RequestParam Long taskId) {
-        return ResponseUtils.getSuccessResponse(taskLayerService.findLayersByTaskIdAndAssignStatusPage(pageNum, pageSize,assignStatus,taskId));
+        return ResponseUtils.getSuccessResponse(taskLayerService.findLayersByTaskIdAndAssignStatusPage(pageNum, pageSize, assignStatus, taskId));
     }
-    
+
     @GetMapping("/{id}")
     @ApiOperation("根据任务图片ID获取任务图片")
     public TaskLayerVO getTaskLayerById(@PathVariable Long id) {
@@ -61,15 +61,15 @@ public class TaskLayerController {
     @PostMapping("/{id}/samples")
     @ApiOperation("根据任务图片ID创建任务样本")
     public BaseResponse<SampleVO> createSampleByTaskLayerId(@PathVariable Long id,
-                                              @RequestBody @Validated SampleVO sampleVO) throws ParseException {
-        Sample sample = sampleService.createSampleByTaskLayerId(id, sampleVO,null);
+                                                            @RequestBody @Validated SampleVO sampleVO) throws ParseException {
+        Sample sample = sampleService.createSampleByTaskLayerId(id, sampleVO, null);
         return ResponseUtils.getSuccessResponse(SampleVO.from(sample));
     }
 
     @PutMapping("/samples/{sampleId}")
     @ApiOperation("根据样本ID更新样本状态{未审核： UNAUDITED,通过：ACCEPT,不通过：REJECT}")
     public BaseResponse<Void> updateSampleStatus(@PathVariable Long sampleId,
-                                                   @RequestBody @Validated SampleStatusUpdateDTO sampleStatusUpdateDTO) {
+                                                 @RequestBody @Validated SampleStatusUpdateDTO sampleStatusUpdateDTO) {
         sampleService.updateSampleStatus(sampleId, sampleStatusUpdateDTO.getStatus());
         return ResponseUtils.getSuccessResponse();
     }
@@ -81,7 +81,7 @@ public class TaskLayerController {
         return ResponseUtils.getSuccessResponse();
     }
 
-    @DeleteMapping("/taskLayer/{taskLayerId}")
+    @DeleteMapping("/del/{taskLayerId}")
     @ApiOperation("删除任务下面的图片")
     public BaseResponse<Boolean> deleteTaskLayer(@PathVariable Long taskLayerId) {
         return ResponseUtils.getSuccessResponse(taskLayerService.delete(taskLayerId));

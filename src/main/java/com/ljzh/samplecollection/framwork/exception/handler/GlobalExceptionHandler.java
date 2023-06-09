@@ -22,12 +22,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = Exception.class)
     public BaseResponse handleException(Exception e) {
-        log.error("exception :{} ", e);
+        log.error("exception :{} ", e.getMessage());
         e.printStackTrace();
         BaseResponse response = new BaseResponse();
         response.setCode(ResponseEnum.SERVICE_INNER_ERROR.code);
         response.setDesc(ResponseEnum.SERVICE_INNER_ERROR.desc);
-
         return response;
     }
 
@@ -37,7 +36,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public BaseResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         e.printStackTrace();
-        log.warn("exception :{} ", e);
+        log.warn("exception :{} ", e.getMessage());
         BaseResponse response = new BaseResponse();
         BindingResult result = e.getBindingResult();
         FieldError error = result.getFieldError();
