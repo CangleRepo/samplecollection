@@ -18,7 +18,9 @@ public enum ResponseEnum {
     USER_ROLE_NOT_EXIST(10005, "用户角色不存在"),
     TASK_LAYER_LACK_COLLECTOR(10006, "任务图片缺少采集员"),
     ARRAY_OUT_OF_BOUND(10007, "数组越界"),
-    TASK_ASSIGNED(10008, "任务已分配");
+    TASK_ASSIGNED(10008, "任务已分配"),
+    PAGE_NUMBER_OUT_OF_RANGE(10009, "页码超出范围"),
+    TASK_ASSIGN_EXIST(10010, "任务已分配");
 
 
     public final int code;

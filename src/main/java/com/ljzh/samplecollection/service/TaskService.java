@@ -122,14 +122,26 @@ public class TaskService {
     }
 
     public void assignTaskAssignee(TaskAssignVO taskAssignVO) {
-        if (taskAssignVO.getUserIds().size() > taskAssignVO.getTaskLayerIds().size()){
+        if (taskAssignVO == null || taskAssignVO.getUserIds() == null || taskAssignVO.getTaskLayerIds() == null) {
+            throw new CustomException(ResponseEnum.PARAM_ERROR);
+        }
+        if (taskAssignVO.getUserIds().size() > taskAssignVO.getTaskLayerIds().size()) {
             throw new CustomException(ResponseEnum.TASK_LAYER_LACK);
         }
+        List<TaskLayer> taskLayers = taskLayerRepository.findByIdIn(taskAssignVO.getTaskLayerIds());
+        if (taskLayers.size() != taskAssignVO.getTaskLayerIds().size()) {
+            throw new CustomException(ResponseEnum.TASK_LAYER_LACK);
+        }
+        for (TaskLayer taskLayer : taskLayers) {
+            TaskAssignee taskAssignee = taskAssigneeRepository.findByTaskLayerIdAndRoleId(taskLayer.getId(), taskAssignVO.getRoleId());
+            if (!ObjectUtils.isEmpty(taskAssignee)) {
+                throw new CustomException(ResponseEnum.TASK_ASSIGN_EXIST);
+            }
+        }
         List<User> users = userRepository.findByIdIn(taskAssignVO.getUserIds());
-
         for (User user : users) {
             UserRole userRole = userRoleRepository.findUserRoleByRoleIdAndUserId(taskAssignVO.getRoleId(), user.getId());
-            if (ObjectUtils.isEmpty(userRole)){
+            if (ObjectUtils.isEmpty(userRole)) {
                 throw new CustomException(ResponseEnum.USER_ROLE_NOT_EXIST);
             }
         }
@@ -137,16 +149,15 @@ public class TaskService {
         // 已经校验用户角色，所以断言角色存在
         assert optRole.isPresent();
         Role role = optRole.get();
-        List<TaskLayer> taskLayers = taskLayerRepository.findByIdIn(taskAssignVO.getTaskLayerIds());
         List<TaskAssignee> taskAssignees = new ArrayList<>();
         int userIndex = 0;
         for (TaskLayer taskLayer : taskLayers) {
             if (Objects.equals(role.getCode(), "Auditor") &&
                     (Objects.equals(taskLayer.getStatus(), TaskLayerStatus.UNCOLLECTED.code())
                             || Objects.equals(taskLayer.getStatus(), TaskLayerStatus.COLLECTING.code()))
-            ){
+            ) {
                 TaskAssignee taskAssignee = taskAssigneeRepository.findByTaskLayerIdAndRoleId(taskLayer.getId(), 1L);
-                if (ObjectUtils.isEmpty(taskAssignee)){
+                if (ObjectUtils.isEmpty(taskAssignee)) {
                     throw new CustomException(ResponseEnum.TASK_LAYER_LACK_COLLECTOR);
                 }
             }
@@ -156,7 +167,7 @@ public class TaskService {
             taskAssignee.setUser(users.get(userIndex));
             taskAssignee.setRole(role);
             userIndex++;
-            if (userIndex == users.size()){
+            if (userIndex == users.size()) {
                 userIndex = 0;
             }
             taskAssignees.add(taskAssignee);
@@ -211,7 +222,7 @@ public class TaskService {
         String originalFileName = uploadZipFile.getOriginalFilename();
         String uploadFolderPath = imgStorePath;
         File newFolder = new File(uploadFolderPath + File.separator + originalFileName.substring(0, originalFileName.lastIndexOf(".")));
-        if (newFolder.exists()){
+        if (newFolder.exists()) {
             throw new CustomException(ResponseEnum.FILE_EXIST);
         }
 
@@ -262,7 +273,7 @@ public class TaskService {
 
         Map<String, Layer> layerMap = createLayerGroupWithLayers(newFolder);
         List<TaskLayer> taskLayers = new ArrayList<>();
-        for (Layer layer : layerMap.values()){
+        for (Layer layer : layerMap.values()) {
             TaskLayer taskLayer = new TaskLayer();
             taskLayer.setLayer(layer);
             Optional<Task> task = taskRepository.findById(taskId);
@@ -304,11 +315,11 @@ public class TaskService {
                             if ("name".equals(rootNextNext.getName())) {
                                 SampleTag newTag = new SampleTag();
                                 SampleTag tag = sampleTagRepository.findByName(rootNextNext.getText());
-                                if (tag!=null){
-                                    BeanUtils.copyProperties(tag,newTag);
+                                if (tag != null) {
+                                    BeanUtils.copyProperties(tag, newTag);
                                 }
                                 newTag.setName(rootNextNext.getText());
-                                if (newTag.getId() == null){
+                                if (newTag.getId() == null) {
                                     newTag.setCreateTime(LocalDateTime.now());
                                 }
                                 newTag.setUpdateTime(LocalDateTime.now());
@@ -348,7 +359,7 @@ public class TaskService {
                                     sample.setTheGeom(theGeom);
                                 }
                             }
-                            if (sample.getSampleTag()!=null&&sample.getTheGeom()!=null){
+                            if (sample.getSampleTag() != null && sample.getTheGeom() != null) {
                                 sample.setTaskLayer(taskLayer);
                                 sample.setStatus(SampleStatus.UNAUDITED.code());
                                 sample.setCreateTime(LocalDateTime.now());
@@ -374,6 +385,7 @@ public class TaskService {
 
     /**
      * 创建新的图层组并保存到数据库，并关联指定目录下所有jpg和png文件作为其一部分图层。
+     *
      * @param newFolder 新建的文件夹对象
      * @return 由图层名和图层组成的Map
      */
@@ -382,7 +394,7 @@ public class TaskService {
         LayerGroup layerGroup = new LayerGroup();
         layerGroup.setName(newFolder.getName());
         Date date = new Date();
-        layerGroup.setDescription("新建图层组"+ date.toString());
+        layerGroup.setDescription("新建图层组" + date.toString());
         layerGroup.setRegionId(100L); // 假设regionId为1L
         layerGroup.setCreateTime(LocalDateTime.now());
         layerGroup.setUpdateTime(LocalDateTime.now());
@@ -398,7 +410,7 @@ public class TaskService {
                         || file.getName().toLowerCase().endsWith(".png"))) {
                     Layer layer = new Layer();
                     layer.setName(file.getName().substring(0, file.getName().lastIndexOf(".")));
-                    layer.setPath("/"+newFolder.getName() + "/" + file.getName());
+                    layer.setPath("/" + newFolder.getName() + "/" + file.getName());
                     try (InputStream in = new FileInputStream(file)) {
                         Image image = ImageIO.read(in);
                         layer.setWidth(image.getWidth(null));
@@ -419,9 +431,9 @@ public class TaskService {
     }
 
 
-
     /**
      * 删除指定文件夹及其上级目录中的所有内容（递归删除）
+     *
      * @param folder 待删除的文件夹
      */
     private void deleteFolder(File folder) {
@@ -440,46 +452,42 @@ public class TaskService {
         }
     }
 
-    public boolean export(Long taskId,int width,int height, HttpServletResponse response) throws IOException {
+    public boolean export(Long taskId, int width, int height, HttpServletResponse response) throws IOException {
         Optional<Task> task = taskRepository.findById(taskId);
         List<TaskLayer> taskLayers = taskLayerRepository.findByTaskId(taskId);
         for (TaskLayer taskLayer : taskLayers) {
             Layer layer = taskLayer.getLayer();
-            BufferedImage image = ImageIO.read(new File(imgStorePath+"/"+layer.getPath()));
-            int widthNum = (image.getWidth() / width)+1;
-            int heightNum = (image.getHeight() / height)+1;
+            BufferedImage image = ImageIO.read(new File(imgStorePath + "/" + layer.getPath()));
+            int widthNum = (image.getWidth() / width) + 1;
+            int heightNum = (image.getHeight() / height) + 1;
             List<Sample> samples = sampleRepository.findByTaskLayer(taskLayer);
             for (int i = 0; i < widthNum; i++) {
                 for (int j = 0; j < heightNum; j++) {
                     // 创建 GeometryFactory 对象
                     GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
                     Coordinate[] coordinates = new Coordinate[5];
-                    if (i*width< image.getWidth()&&j*height< image.getHeight()){
-                        coordinates[0] = new Coordinate(i*width, j*height);
-                        if ((i*width+width)> image.getWidth()&&(j*height+height)< image.getHeight()){
+                    if (i * width < image.getWidth() && j * height < image.getHeight()) {
+                        coordinates[0] = new Coordinate(i * width, j * height);
+                        if ((i * width + width) > image.getWidth() && (j * height + height) < image.getHeight()) {
                             // 创建 Coordinate 数组
-                            coordinates[1] = new Coordinate(image.getWidth(), j*height);
-                            coordinates[2] = new Coordinate(image.getWidth(), j*height+height);
-                            coordinates[3] = new Coordinate(i*width, j*height+height);
-                        }
-                        else if((i*width+width)< image.getWidth()&&(j*height+height)> image.getHeight()){
-                            coordinates[1] = new Coordinate(i*width+width, j*height);
-                            coordinates[2] = new Coordinate(i*width+width, image.getHeight());
-                            coordinates[3] = new Coordinate(i*width, image.getHeight());
-                        }
-                        else if((i*width+width)> image.getWidth()&&(j*height+height)>image.getHeight()){
-                            coordinates[1] = new Coordinate(image.getWidth(), j*height);
+                            coordinates[1] = new Coordinate(image.getWidth(), j * height);
+                            coordinates[2] = new Coordinate(image.getWidth(), j * height + height);
+                            coordinates[3] = new Coordinate(i * width, j * height + height);
+                        } else if ((i * width + width) < image.getWidth() && (j * height + height) > image.getHeight()) {
+                            coordinates[1] = new Coordinate(i * width + width, j * height);
+                            coordinates[2] = new Coordinate(i * width + width, image.getHeight());
+                            coordinates[3] = new Coordinate(i * width, image.getHeight());
+                        } else if ((i * width + width) > image.getWidth() && (j * height + height) > image.getHeight()) {
+                            coordinates[1] = new Coordinate(image.getWidth(), j * height);
                             coordinates[2] = new Coordinate(image.getWidth(), image.getHeight());
-                            coordinates[3] = new Coordinate(i*width, image.getHeight());
+                            coordinates[3] = new Coordinate(i * width, image.getHeight());
+                        } else {
+                            coordinates[1] = new Coordinate(i * width + width, j * height);
+                            coordinates[2] = new Coordinate(i * width + width, j * height + height);
+                            coordinates[3] = new Coordinate(i * width, j * height + height);
                         }
-                        else{
-                            coordinates[1] = new Coordinate(i*width+width, j*height);
-                            coordinates[2] = new Coordinate(i*width+width, j*height+height);
-                            coordinates[3] = new Coordinate(i*width, j*height+height);
-                        }
-                        coordinates[4] = new Coordinate(i*width, j*height);
-                    }
-                    else{
+                        coordinates[4] = new Coordinate(i * width, j * height);
+                    } else {
                         break;
                     }
 
@@ -490,7 +498,7 @@ public class TaskService {
                     for (Sample sample : samples) {
                         Polygon theGeom = (Polygon) sample.getTheGeom();
                         Geometry result = polygon.intersection(theGeom);
-                        if (!result.isEmpty()&&result instanceof Polygon){
+                        if (!result.isEmpty() && result instanceof Polygon) {
                             Object object = new Object();
                             object.setName(sample.getSampleTag().getName());
                             object.setPose(0);
@@ -498,35 +506,35 @@ public class TaskService {
                             BndBox bndBox = new BndBox();
                             Envelope envelopeInternal = result.getEnvelopeInternal();
                             if (((int) envelopeInternal.getMaxX() == (int) envelopeInternal.getMinX())
-                                    ||((int) envelopeInternal.getMaxY() == (int) envelopeInternal.getMinY())){
+                                    || ((int) envelopeInternal.getMaxY() == (int) envelopeInternal.getMinY())) {
                                 break;
                             }
-                            bndBox.setXmax((int) envelopeInternal.getMaxX()-i*width);
-                            bndBox.setYmax((int) envelopeInternal.getMaxY()-j*height);
-                            bndBox.setXmin((int) envelopeInternal.getMinX()-i*width);
-                            bndBox.setYmin((int) envelopeInternal.getMinY()-j*height);
+                            bndBox.setXmax((int) envelopeInternal.getMaxX() - i * width);
+                            bndBox.setYmax((int) envelopeInternal.getMaxY() - j * height);
+                            bndBox.setXmin((int) envelopeInternal.getMinX() - i * width);
+                            bndBox.setYmin((int) envelopeInternal.getMinY() - j * height);
                             object.setBndBox(bndBox);
                             object.setDifficult(0);
                             objects.add(object);
                         }
                     }
-                    if (!ObjectUtils.isEmpty(objects)){
+                    if (!ObjectUtils.isEmpty(objects)) {
                         LocalDate currentDate = LocalDate.now();
                         int year = currentDate.getYear();
                         int month = currentDate.getMonthValue();
                         int day = currentDate.getDayOfMonth();
                         // 切图 小图路径
-                        String path = exportPath+"/"+task.get().getName()+"/"+layer.getName()+"-"+i+"_"+j +"-"+ year + "-" + month + "-" + day+".JPG";
-                        int subWidth = (int)polygon.getEnvelopeInternal().getWidth();
+                        String path = exportPath + "/" + task.get().getName() + "/" + layer.getName() + "-" + i + "_" + j + "-" + year + "-" + month + "-" + day + ".JPG";
+                        int subWidth = (int) polygon.getEnvelopeInternal().getWidth();
                         int subHeight = (int) polygon.getEnvelopeInternal().getHeight();
-                        BufferedImage subimage = image.getSubimage(i * width, j * height,subWidth , subHeight);
+                        BufferedImage subimage = image.getSubimage(i * width, j * height, subWidth, subHeight);
                         File file = new File(path);
                         boolean mkdirs = file.getParentFile().mkdirs();
-                        ImageIO.write(subimage,"JPG",file);
+                        ImageIO.write(subimage, "JPG", file);
                         sampleAnnotation.setObjectList(objects);
                         sampleAnnotation.setPath(path);
                         sampleAnnotation.setFolder(layer.getName());
-                        sampleAnnotation.setFilename(layer.getName()+i+"_"+j + year + "-" + month + "-" + day+".JPG");
+                        sampleAnnotation.setFilename(layer.getName() + i + "_" + j + year + "-" + month + "-" + day + ".JPG");
                         sampleAnnotation.setSource(new Source());
                         sampleAnnotation.setSegmented(0);
                         Size size = new Size();
@@ -545,7 +553,7 @@ public class TaskService {
                             // 将序列化后的 XML 写入到文件中
                             TransformerFactory transformerFactory = TransformerFactory.newInstance();
                             Transformer transformer = transformerFactory.newTransformer();
-                            StreamResult result = new StreamResult(new File(path.replace(".JPG",".xml")));
+                            StreamResult result = new StreamResult(new File(path.replace(".JPG", ".xml")));
                             transformer.transform(new StreamSource(new StringReader(sw.toString())), result);
                         } catch (TransformerException e) {
                             e.printStackTrace();
@@ -559,16 +567,15 @@ public class TaskService {
         }
 
 
-
         // 获取要下载的文件夹D:\sampleCollection\export\京山秋季采集
-        File folder = new File(exportPath+"/"+task.get().getName());
+        File folder = new File(exportPath + "/" + task.get().getName());
         if (!folder.exists()) {
             // 如果文件夹不存在，返回错误信息
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Folder not found.");
             return false;
         }
         String zipFileName = folder.getName() + ".zip";
-        setAttachmentResponseHeader(response,zipFileName);
+        setAttachmentResponseHeader(response, zipFileName);
         ZipOutputStream zos = new ZipOutputStream(response.getOutputStream());
         compressFolder(folder, zos, "");
         zos.close();
@@ -646,11 +653,10 @@ public class TaskService {
     /**
      * 下载文件名重新编码
      *
-     * @param response 响应对象
+     * @param response     响应对象
      * @param realFileName 真实文件名
      */
-    public void setAttachmentResponseHeader(HttpServletResponse response, String realFileName) throws UnsupportedEncodingException
-    {
+    public void setAttachmentResponseHeader(HttpServletResponse response, String realFileName) throws UnsupportedEncodingException {
         String percentEncodedFileName = percentEncode(realFileName);
 
         StringBuilder contentDispositionValue = new StringBuilder();
@@ -672,8 +678,7 @@ public class TaskService {
      * @param s 需要百分号编码的字符串
      * @return 百分号编码后的字符串
      */
-    public static String percentEncode(String s) throws UnsupportedEncodingException
-    {
+    public static String percentEncode(String s) throws UnsupportedEncodingException {
 //        System.out.println(getUTFStringByEncoding(s));
         return new String(s.getBytes(Charset.forName(getUTFStringByEncoding(s))), StandardCharsets.UTF_8.toString());
     }
@@ -681,14 +686,14 @@ public class TaskService {
     public static String getUTFStringByEncoding(String str) {
         String encode = "UTF-8";
         try {
-            if(str!=null){
+            if (str != null) {
                 if (str.equals(new String(str.getBytes("GB2312"), "GB2312"))) {
                     encode = "GB2312";
-                }else if (str.equals(new String(str.getBytes("ISO-8859-1"), "ISO-8859-1"))) {
+                } else if (str.equals(new String(str.getBytes("ISO-8859-1"), "ISO-8859-1"))) {
                     encode = "ISO-8859-1";
-                }else if (str.equals(new String(str.getBytes("UTF-8"), "UTF-8"))) {
+                } else if (str.equals(new String(str.getBytes("UTF-8"), "UTF-8"))) {
                     encode = "UTF-8";
-                }else if (str.equals(new String(str.getBytes("GBK"), "GBK"))) {
+                } else if (str.equals(new String(str.getBytes("GBK"), "GBK"))) {
                     encode = "GBK";
                 }
             }
@@ -717,17 +722,15 @@ public class TaskService {
         TaskLayer taskLayer = new TaskLayer();
         taskLayer.setStatus(TaskLayerStatus.UNCOLLECTED.code());
         Optional<Task> task = taskRepository.findById(taskId);
-        if (task.isPresent()){
+        if (task.isPresent()) {
             taskLayer.setTask(task.get());
-        }
-        else {
+        } else {
             throw new CustomException(ResponseEnum.TASK_NOT_EXITS);
         }
         Optional<Layer> layer = layerRepository.findById(layerId);
-        if (layer.isPresent()){
+        if (layer.isPresent()) {
             taskLayer.setLayer(layer.get());
-        }
-        else {
+        } else {
             throw new CustomException(ResponseEnum.LAYER_NOT_EXITS);
         }
         taskLayer.setCreateTime(LocalDateTime.now());
