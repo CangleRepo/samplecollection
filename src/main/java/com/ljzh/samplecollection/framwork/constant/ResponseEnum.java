@@ -16,7 +16,9 @@ public enum ResponseEnum {
     TASK_LAYER_LACK(10003, "任务图片缺失"),
     ILLEGAL_STATE(10004, "非法的角色"),
     USER_ROLE_NOT_EXIST(10005, "用户角色不存在"),
-    TASK_LAYER_LACK_COLLECTOR(10006, "任务图片缺少采集员");
+    TASK_LAYER_LACK_COLLECTOR(10006, "任务图片缺少采集员"),
+    ARRAY_OUT_OF_BOUND(10007, "数组越界"),
+    TASK_ASSIGNED(10008, "任务已分配");
 
 
     public final int code;

@@ -14,5 +14,7 @@ import java.util.List;
  **/
 public interface TaskLayerViewRepository extends JpaRepository<TaskLayerView, Long> {
     List<TaskLayerView> findByAssignStatusAndTaskId(Integer code, Long taskId);
-    
+
+    TaskLayerView findByTaskLayerId(Long taskLayerId);
+
 }
