@@ -123,7 +123,7 @@ public class TaskService {
 
     public void assignTaskAssignee(TaskAssignVO taskAssignVO) {
         if (taskAssignVO.getUserIds().size() > taskAssignVO.getTaskLayerIds().size()){
-            throw new CustomException(ResponseEnum.TASK_LAYER_LOCK);
+            throw new CustomException(ResponseEnum.TASK_LAYER_LACK);
         }
         List<User> users = userRepository.findByIdIn(taskAssignVO.getUserIds());
 
@@ -133,12 +133,23 @@ public class TaskService {
                 throw new CustomException(ResponseEnum.USER_ROLE_NOT_EXIST);
             }
         }
-
-        Role role = roleRepository.findById(taskAssignVO.getRoleId()).get();
+        Optional<Role> optRole = roleRepository.findById(taskAssignVO.getRoleId());
+        // 已经校验用户角色，所以断言角色存在
+        assert optRole.isPresent();
+        Role role = optRole.get();
         List<TaskLayer> taskLayers = taskLayerRepository.findByIdIn(taskAssignVO.getTaskLayerIds());
         List<TaskAssignee> taskAssignees = new ArrayList<>();
         int userIndex = 0;
         for (TaskLayer taskLayer : taskLayers) {
+            if (Objects.equals(role.getCode(), "Auditor") &&
+                    (Objects.equals(taskLayer.getStatus(), TaskLayerStatus.UNCOLLECTED.code())
+                            || Objects.equals(taskLayer.getStatus(), TaskLayerStatus.COLLECTING.code()))
+            ){
+                TaskAssignee taskAssignee = taskAssigneeRepository.findByTaskLayerIdAndRoleId(taskLayer.getId(), 1L);
+                if (ObjectUtils.isEmpty(taskAssignee)){
+                    throw new CustomException(ResponseEnum.TASK_LAYER_LACK_COLLECTOR);
+                }
+            }
             TaskAssignee taskAssignee = new TaskAssignee();
             taskAssignee.setTaskLayer(taskLayer);
             taskAssignee.setTask(taskLayer.getTask());
