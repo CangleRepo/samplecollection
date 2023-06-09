@@ -96,14 +96,14 @@ public class UserController {
     // 分页查询所有用户
     @GetMapping("/page")
     @ApiOperation("分页查询所有用户")
-    public BaseResponse<Page<User>> getAllUsersByPage(@RequestParam(defaultValue = "0") int pageNum, @RequestParam(defaultValue = "10") int pageSize) {
+    public BaseResponse<Page<User>> getAllUsersByPage(@RequestParam(defaultValue = "1") int pageNum, @RequestParam(defaultValue = "10") int pageSize) {
         return ResponseUtils.getSuccessResponse(userService.getAllUsersByPage(pageNum, pageSize));
     }
 
     // 按角色查询用户附带当前任务下的任务图片数量和总任务图片数量
     @GetMapping("/findUsersByCurrentTaskRole")
     @ApiOperation("按角色查询用户附带当前任务下所选角色的任务图片数量和总任务图片数量")
-    public BaseResponse<List<UserWithLayersCountVO>>  findUserWithLayersCountByRoleId(@RequestParam("taskId") Long taskId, @RequestParam("roleId")Long roleId){
+    public BaseResponse<List<UserWithLayersCountVO>> findUserWithLayersCountByRoleId(@RequestParam("taskId") Long taskId, @RequestParam("roleId") Long roleId) {
         return ResponseUtils.getSuccessResponse(userService.findUserWithLayersCountByRoleId(taskId, roleId));
     }
 }

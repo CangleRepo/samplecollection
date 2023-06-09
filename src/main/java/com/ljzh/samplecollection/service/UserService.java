@@ -6,6 +6,9 @@ import com.ljzh.samplecollection.domain.entity.User;
 import com.ljzh.samplecollection.domain.entity.UserRole;
 import com.ljzh.samplecollection.domain.vo.UserVO;
 import com.ljzh.samplecollection.domain.vo.UserWithLayersCountVO;
+import com.ljzh.samplecollection.framwork.annotation.VerifyPage;
+import com.ljzh.samplecollection.framwork.constant.ResponseEnum;
+import com.ljzh.samplecollection.framwork.exception.CustomException;
 import com.ljzh.samplecollection.repository.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,14 +17,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class UserService {
@@ -64,13 +65,18 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public User findUserByUsername(String username){
+    public User findUserByUsername(String username) {
         return userRepository.findUserByUsername(username);
     }
 
+    @VerifyPage
     public Page<User> getAllUsersByPage(int pageNum, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(Sort.Direction.ASC, "id"));
-        return userRepository.findAll(pageable);
+        Pageable pageable = PageRequest.of(pageNum - 1, pageSize, Sort.by(Sort.Direction.ASC, "id"));
+        Page<User> userPage = userRepository.findAll(pageable);
+        if (userPage.getTotalElements() <= (long) (pageNum - 1) * pageSize) {
+            throw new CustomException(ResponseEnum.PAGE_NUMBER_OUT_OF_RANGE);
+        }
+        return userPage;
     }
 
     public User saveUserWithRoles(UserVO userVO) {

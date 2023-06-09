@@ -1,24 +1,21 @@
 package com.ljzh.samplecollection.service;
 
-import com.ljzh.samplecollection.constant.DefaultPage;
 import com.ljzh.samplecollection.constant.TaskAssignStatus;
 import com.ljzh.samplecollection.constant.TaskLayerStatus;
 import com.ljzh.samplecollection.domain.entity.Layer;
 import com.ljzh.samplecollection.domain.entity.TaskLayer;
 import com.ljzh.samplecollection.domain.view.TaskLayerView;
+import com.ljzh.samplecollection.framwork.annotation.VerifyPage;
 import com.ljzh.samplecollection.framwork.constant.ResponseEnum;
 import com.ljzh.samplecollection.framwork.exception.CustomException;
 import com.ljzh.samplecollection.repository.TaskLayerRepository;
 import com.ljzh.samplecollection.repository.TaskLayerViewRepository;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.*;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,15 +34,10 @@ public class TaskLayerService {
         return taskLayerRepository.save(taskLayer);
     }
 
+    @VerifyPage
     public Page<Layer> findLayersByTaskIdAndAssignStatusPage(int pageNum, int pageSize, Integer assignStatus, Long taskId) {
         if (!(TaskAssignStatus.ASSIGNED_AUDIT.code().equals(assignStatus) || TaskAssignStatus.ASSIGNED_COLLECTION.code().equals(assignStatus) || TaskAssignStatus.UNDISTRIBUTED.code().equals(assignStatus))) {
             throw new CustomException(ResponseEnum.ILLEGAL_STATE);
-        }
-        if (pageNum < 1) {
-            pageNum = DefaultPage.DEFAULT_PAGE_NUM.getValue();
-        }
-        if (pageSize < 1) {
-            pageSize = DefaultPage.DEFAULT_PAGE_SIZE.getValue();
         }
         Pageable pageable = PageRequest.of(pageNum - 1, pageSize, Sort.by(Sort.Direction.ASC, "id"));
         List<Long> taskLayerIds = taskLayerViewRepository.findByAssignStatusAndTaskId(assignStatus, taskId).stream().map(TaskLayerView::getTaskLayerId).collect(Collectors.toList());
