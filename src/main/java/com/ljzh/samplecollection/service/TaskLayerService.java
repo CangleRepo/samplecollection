@@ -2,9 +2,9 @@ package com.ljzh.samplecollection.service;
 
 import com.ljzh.samplecollection.constant.TaskAssignStatus;
 import com.ljzh.samplecollection.constant.TaskLayerStatus;
-import com.ljzh.samplecollection.domain.entity.Layer;
 import com.ljzh.samplecollection.domain.entity.TaskLayer;
 import com.ljzh.samplecollection.domain.view.TaskLayerView;
+import com.ljzh.samplecollection.domain.vo.LayerWithTaskLayerIdVO;
 import com.ljzh.samplecollection.framwork.annotation.VerifyPage;
 import com.ljzh.samplecollection.framwork.constant.ResponseEnum;
 import com.ljzh.samplecollection.framwork.exception.CustomException;
@@ -35,7 +35,7 @@ public class TaskLayerService {
     }
 
     @VerifyPage
-    public Page<Layer> findLayersByTaskIdAndAssignStatusPage(int pageNum, int pageSize, Integer assignStatus, Long taskId) {
+    public Page<LayerWithTaskLayerIdVO> findLayersByTaskIdAndAssignStatusPage(int pageNum, int pageSize, Integer assignStatus, Long taskId) {
         if (!(TaskAssignStatus.ASSIGNED_AUDIT.code().equals(assignStatus) || TaskAssignStatus.ASSIGNED_COLLECTION.code().equals(assignStatus) || TaskAssignStatus.UNDISTRIBUTED.code().equals(assignStatus))) {
             throw new CustomException(ResponseEnum.ILLEGAL_STATE);
         }
@@ -44,13 +44,13 @@ public class TaskLayerService {
         if (CollectionUtils.isEmpty(taskLayerIds)) {
             throw new CustomException(ResponseEnum.TASK_NOT_EXITS);
         }
-        List<Layer> layers = taskLayerRepository.findByIdIn(taskLayerIds).stream().map(TaskLayer::getLayer).distinct().collect(Collectors.toList());
+        List<LayerWithTaskLayerIdVO> layerWithTaskLayerIdVOs = taskLayerRepository.findByIdIn(taskLayerIds).stream().map(t -> new LayerWithTaskLayerIdVO(t.getLayer(), t.getId())).collect(Collectors.toList());
         int start = (int) pageable.getOffset();
-        int end = Math.min((start + pageable.getPageSize()), layers.size());
-        if (start >= layers.size()) {
+        int end = Math.min((start + pageable.getPageSize()), layerWithTaskLayerIdVOs.size());
+        if (start >= layerWithTaskLayerIdVOs.size()) {
             throw new CustomException(ResponseEnum.ARRAY_OUT_OF_BOUND);
         }
-        return new PageImpl<>(layers.subList(start, end), pageable, layers.size());
+        return new PageImpl<>(layerWithTaskLayerIdVOs.subList(start, end), pageable, layerWithTaskLayerIdVOs.size());
     }
 
 

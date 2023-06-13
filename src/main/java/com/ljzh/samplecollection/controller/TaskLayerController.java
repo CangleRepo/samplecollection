@@ -1,9 +1,9 @@
 package com.ljzh.samplecollection.controller;
 
-import com.ljzh.samplecollection.domain.entity.Layer;
 import com.ljzh.samplecollection.domain.entity.Sample;
 import com.ljzh.samplecollection.domain.entity.TaskLayer;
 import com.ljzh.samplecollection.domain.dto.SampleStatusUpdateDTO;
+import com.ljzh.samplecollection.domain.vo.LayerWithTaskLayerIdVO;
 import com.ljzh.samplecollection.domain.vo.SampleVO;
 import com.ljzh.samplecollection.domain.dto.TaskLayerStatusUpdateDTO;
 import com.ljzh.samplecollection.domain.vo.TaskLayerVO;
@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,10 +34,10 @@ public class TaskLayerController {
 
     @GetMapping("/page")
     @ApiOperation("根据任务Id和分配状态分页查询图层名")
-    public BaseResponse<Page<Layer>> findLayersByTaskIdAndAssignStatusPage(@RequestParam(defaultValue = "1") int pageNum,
-                                                                           @RequestParam(defaultValue = "10") int pageSize,
-                                                                           @RequestParam Integer assignStatus,
-                                                                           @RequestParam Long taskId) {
+    public BaseResponse<Page<LayerWithTaskLayerIdVO>> findLayersByTaskIdAndAssignStatusPage(@RequestParam(defaultValue = "1") int pageNum,
+                                                                                            @RequestParam(defaultValue = "10") int pageSize,
+                                                                                            @RequestParam Integer assignStatus,
+                                                                                            @RequestParam Long taskId) {
         return ResponseUtils.getSuccessResponse(taskLayerService.findLayersByTaskIdAndAssignStatusPage(pageNum, pageSize, assignStatus, taskId));
     }
 
