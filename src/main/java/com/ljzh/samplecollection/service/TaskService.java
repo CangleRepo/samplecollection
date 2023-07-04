@@ -456,11 +456,14 @@ public class TaskService {
         Optional<Task> task = taskRepository.findById(taskId);
         List<TaskLayer> taskLayers = taskLayerRepository.findByTaskId(taskId);
         for (TaskLayer taskLayer : taskLayers) {
+            List<Sample> samples = sampleRepository.findByTaskLayer(taskLayer);
+            if (samples.isEmpty()){
+                break;
+            }
             Layer layer = taskLayer.getLayer();
             BufferedImage image = ImageIO.read(new File(imgStorePath + "/" + layer.getPath()));
             int widthNum = (image.getWidth() / width) + 1;
             int heightNum = (image.getHeight() / height) + 1;
-            List<Sample> samples = sampleRepository.findByTaskLayer(taskLayer);
             for (int i = 0; i < widthNum; i++) {
                 for (int j = 0; j < heightNum; j++) {
                     // 创建 GeometryFactory 对象
@@ -571,8 +574,7 @@ public class TaskService {
         File folder = new File(exportPath + "/" + task.get().getName());
         if (!folder.exists()) {
             // 如果文件夹不存在，返回错误信息
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Folder not found.");
-            return false;
+            throw new CustomException(ResponseEnum.NO_SAMPLES_IN_TASK);
         }
         String zipFileName = folder.getName() + ".zip";
         setAttachmentResponseHeader(response, zipFileName);

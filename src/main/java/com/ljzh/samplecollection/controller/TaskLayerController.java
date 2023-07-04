@@ -74,9 +74,18 @@ public class TaskLayerController {
     }
 
     @DeleteMapping("/samples/{sampleId}")
-    @ApiOperation("根据样本ID更新样本状态{未审核： UNAUDITED,通过：ACCEPT,不通过：REJECT}")
+    @ApiOperation("根据样本ID删除样本数据")
     public BaseResponse<Void> deleteSample(@PathVariable Long sampleId) {
         sampleService.deleteSample(sampleId);
+        return ResponseUtils.getSuccessResponse();
+    }
+
+    @GetMapping("/batchDeleteSamples")
+    @ApiOperation("根据样本ID删除样本数据")
+    public BaseResponse<Void> batchDeleteSamples(@RequestParam("ids") List<String> ids) {
+        for (String id : ids) {
+            sampleService.deleteSample(Long.valueOf(id));
+        }
         return ResponseUtils.getSuccessResponse();
     }
 

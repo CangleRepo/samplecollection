@@ -35,7 +35,7 @@ public class TaskController {
     }
 
     @PostMapping("/{taskId}/task-layers")
-    @ApiOperation("分配任务图片数据")
+    @ApiOperation("分配任务图片数据(多张图的图片组)")
     public BaseResponse<?> assignTaskLayerGroup(@PathVariable("taskId") Long taskId,
                                              @RequestBody LayerGroupDTO layerGroupDTO) {
         taskService.assignTaskLayerGroup(taskId, layerGroupDTO);
@@ -43,7 +43,7 @@ public class TaskController {
     }
 
     @PostMapping("/{taskId}/task-layer")
-    @ApiOperation("分配任务图片数据")
+    @ApiOperation("分配任务图片数据(单张图)")
     public BaseResponse<Boolean> assignTaskLayer(@PathVariable("taskId") Long taskId,
                                            @RequestParam Long layerId) {
         return ResponseUtils.getSuccessResponse(taskService.assignTaskLayer(taskId, layerId));

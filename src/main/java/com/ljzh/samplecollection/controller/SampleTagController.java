@@ -70,6 +70,15 @@ public class SampleTagController {
         return ResponseUtils.getErrorResponse();
     }
 
+    @GetMapping("/batchDeleteSampleTags")
+    @ApiOperation("批量删除样本标签")
+    public BaseResponse<Void> batchDeleteSampleTags(@RequestParam List<String> ids){
+        for (String id : ids) {
+            sampleTagService.deleteSampleTagById(Long.valueOf(id));
+        }
+        return  ResponseUtils.getSuccessResponse();
+    }
+
     @GetMapping
     @ApiOperation("获取所有样本标签")
     public BaseResponse<List<SampleTagVO>> getAllSampleTags() {

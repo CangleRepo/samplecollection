@@ -20,7 +20,8 @@ public enum ResponseEnum {
     ARRAY_OUT_OF_BOUND(10007, "数组越界"),
     TASK_ASSIGNED(10008, "任务已分配"),
     PAGE_NUMBER_OUT_OF_RANGE(10009, "页码超出范围"),
-    TASK_ASSIGN_EXIST(10010, "任务已分配");
+    TASK_ASSIGN_EXIST(10010, "任务已分配"),
+    NO_SAMPLES_IN_TASK(10011, "任务暂未采集样本，无法导出空样本任务");
 
 
     public final int code;
