@@ -40,9 +40,9 @@ ljzh:
   addressEnabled: false
   # 验证码类型 math 数组计算 char 字符验证
   captchaType: math
-  img_store_path: /mntData/datas/sampleCollection/data
-  img_wmts_path: /mntData/datas/sampleCollection/wmts/
-  export_path: /mntData/datas/sampleCollection/export
-#  img_store_path: D:/sampleCollection/data
-#  img_wmts_path: D:/sampleCollection/wmts/
-#  export_path: D:/sampleCollection/export
+#  img_store_path: /mntData/datas/sampleCollection/data
+#  img_wmts_path: /mntData/datas/sampleCollection/wmts/
+#  export_path: /mntData/datas/sampleCollection/export
+  img_store_path: D:/sampleCollection/data
+  img_wmts_path: D:/sampleCollection/wmts/
+  export_path: D:/sampleCollection/export

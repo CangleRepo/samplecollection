@@ -1,5 +1,6 @@
 package com.ljzh.samplecollection.controller;
 
+import com.fasterxml.jackson.databind.ser.Serializers;
 import com.ljzh.samplecollection.domain.entity.User;
 import com.ljzh.samplecollection.domain.entity.UserRole;
 import com.ljzh.samplecollection.domain.dto.LoginRequest;
@@ -61,6 +62,15 @@ public class UserController {
     @ApiOperation("根据id删除用户")
     public BaseResponse<Void> deleteUserById(@PathVariable Long id) {
         userService.deleteUserById(id);
+        return ResponseUtils.getSuccessResponse();
+    }
+
+    @GetMapping("/batchDeleteUsers")
+    @ApiOperation("根据id批量删除用户")
+    public BaseResponse<Void> batchDeleteUsers(@RequestParam List<String> userIds) {
+        for (String userId : userIds) {
+            userService.deleteUserById(Long.valueOf(userId));
+        }
         return ResponseUtils.getSuccessResponse();
     }
 

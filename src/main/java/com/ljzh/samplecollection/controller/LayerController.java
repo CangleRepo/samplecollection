@@ -6,17 +6,30 @@ import com.ljzh.samplecollection.framwork.vo.BaseResponse;
 import com.ljzh.samplecollection.service.LayerService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.log4j.Log4j2;
+import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
+import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletResponse;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 
 @RestController
 @RequestMapping("/layers")
 @Api(tags = "图片相关接口")
+@Log4j2
 public class LayerController {
     @Autowired
     private LayerService layerService;
+
+    @Value("${ljzh.img_store_path}")
+    private String imgStorePath;
 
     @GetMapping("/{id}")
     @ApiOperation("根据图片ID查看图片详情")
@@ -78,6 +91,33 @@ public class LayerController {
         } else {
             return ResponseUtils.getErrorResponse();
         }
+    }
+
+    @GetMapping("/getSmallLayerById")
+    @ApiOperation("根据图片Id获取缩略图")
+    public void getSmallLayerById(String layerId, HttpServletResponse response)throws IOException {
+        LayerVO layerVO = layerService.getById(Long.valueOf(layerId));
+        if(layerVO == null){
+            return;
+        }
+        String filePath = imgStorePath+"/"+"smallLayer" +"/"+layerVO.getLayerGroupId();
+        String originImgPath = imgStorePath + layerVO.getPath();
+        originImgPath.replace(" ","%20");
+        File file = new File(filePath);
+        if(!file.exists()){
+            file.mkdirs();
+        }
+        String smallLayerPath =filePath+"/"+ layerVO.getName() + "-small.png";
+        File smallLayerFile = new File(smallLayerPath);
+        if (!smallLayerFile.exists()){
+            log.info(smallLayerPath);
+            Thumbnails.of(originImgPath).scale(0.05f).outputQuality(0.25f).toFile(smallLayerPath);
+        }
+        try(OutputStream out = response.getOutputStream()){
+            BufferedImage read = ImageIO.read(smallLayerFile);
+            ImageIO.write(read,"PNG",out);
+        }
+
     }
 }
 
